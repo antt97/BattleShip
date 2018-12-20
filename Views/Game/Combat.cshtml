@@ -1,0 +1,140 @@
+﻿@using MvcApp.Models;
+@model Room
+@{
+    ViewBag.Title = "Combat";
+    ViewBag.Pick = 2;
+}
+
+<h2>Combat @Model.RoomId</h2>
+<h4>Press 1: Go to list rooms</h4>
+
+<div id="Combat">
+    @if(Model.Status == 2 || Model.Status == 3) {
+        <div class="text-center">
+            @if(Model.Status == 2) {
+                <h2>TURN</h2>
+                <div>@Model.Members.Where(d => d.IsTurn == true).FirstOrDefault().UserName</div>
+                <h4 class="text-success pt-2" id="time">@((int)Model.DateUpdate.AddSeconds(60).Subtract(DateTime.Now).TotalSeconds)</h4>
+            } else {
+                <h2>WIN</h2>
+                <div>@Model.Members.Where(d => d.Result == 1).FirstOrDefault().UserName</div>
+            }
+        </div><br />
+        <div class="row">
+            @*Danh sách 2 ma trận của 2 người chơi*@
+            @foreach(var item in Model.Members) {
+                var user = UserProvider.GetUser(User.Identity.Name);
+                <div class="col-6">
+                    <div class="text-center">@item.UserName</div>
+                    <table class="table table-bordered text-center">
+                        @for(int i = 0; i < Helper.Size; i++) {
+                            <tr>
+                                @for(int j = 0; j < Helper.Size; j++) {
+                                    char character = item.Matrix[i * Helper.Size + j];
+                                    <td width="@(100/Helper.Size)%" class="@(character!='1' && character!='2'?"b-" + character:"") @(item.UserName!=User.Identity.Name.ToLower()&&user.Position1==(i*Helper.Size+j)?"pick":"")">
+                                        @if(character == '3') {@*Ô bị bắn hụt*@
+                                        <i class="fa fa-bomb"></i>
+                                    } else if(character == '4') {/* Tàu bị bắn trúng*/
+                                        <i class="fa fa-ship text-danger"></i>
+                                    } else if(character == '2' && (Model.Status == 3 || item.UserName == User.Identity.Name.ToLower())) {
+                                        //Tàu chưa bị bắn: Chỉ hiện thị cho người chơi, đối thủ không nhìn thấy hoặc trận đấu đã kết thúc
+                                        <i class="fa fa-ship"></i>
+                                    }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </table><br />
+                </div>
+            }
+
+        </div>
+    } else {
+        <h1 class="text-center text-warning">Waiting...</h1>
+    }
+</div>
+
+<!-- Modal hiện thị thông báo người chiến thắng -->
+<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="text-warning"><i class="fa fa-trophy fa-3x"></i></div>
+                <div id="winer"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Back (1)</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+
+    <script>
+        var timer = 0; // Thời gian đếm ngược
+        var boomSound = new Audio("/Content/sound/boom.wav"); // file sound
+
+        if ($("#time").length > 0)
+            timer = $("#time").text();
+
+        function fixMatrix() { // Sửa matrix các ô là hình vuông
+            $("td").each(function () {
+                $(this).height($(this).width());
+            })
+        }
+        fixMatrix();
+
+        setInterval(function () {
+            timer--;
+            if (timer >= 0)
+                $("#time").html(timer);
+            if (timer == -2) // Hết giờ mà chưa bắn
+                $.post("/game/end/" + @Model.RoomId);
+        }, 1000);
+
+        function press(key) {  // submit press key to server
+            $.get("/game/press", {
+                userName: '@User.Identity.Name',
+                key: key
+            })
+        }
+        $(document).keypress(function (event) { // event press key
+            press(event.which - 48);
+        });
+
+        $(function () { // socket real-time by signalR
+            var connection = connection || $.hubConnection();
+            var hub = hub || connection.createHubProxy("GameHub");
+            hub.on("onLoad", function () { // Load lại trận đấu
+                $.get("/game/combat/@Model.RoomId", function (data, status) {
+                    $("#Combat").html($(data).find("#Combat").html());
+                    timer = $("#time").text();
+                    fixMatrix();
+                })
+            });
+            hub.on("onBoom", function () { // Load lại trận đấu
+                $.get("/game/combat/@Model.RoomId", function (data, status) {
+                    $("#Combat").html($(data).find("#Combat").html());
+                    timer = $("#time").text();
+                    fixMatrix();
+                    boomSound.play();
+                })
+            });
+            var isEnd = false;
+            hub.on("onEnd", function (userName) { // Trận đấu kết thúc
+                if (isEnd)
+                    return;
+                isEnd = true;
+                $("#winer").text(userName);
+                $('#modal').modal('show');
+            });
+            hub.on("onBack", function () { // Về trang Rooms
+                window.location = "/game";
+            });
+            connection.start(function () {
+                hub.invoke('JoinRoom', '@Model.RoomId').done(function () { });
+            });
+        })
+    </script>
+}

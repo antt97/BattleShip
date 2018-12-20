@@ -1,0 +1,60 @@
+﻿@using MvcApp.Models;
+@model IEnumerable<Room>
+@{
+    ViewBag.Title = "Game";
+    ViewBag.Pick = 2;
+    int no = -1;
+    var user = UserProvider.GetUser(User.Identity.Name);
+}
+
+<h2>Game</h2>
+<h4>List rooms combat</h4>
+<p>
+    <a class="btn btn-success" id="btn-create">
+        Create (3)
+    </a>
+</p>
+
+<div id="Rooms">
+    @foreach(var item in Model) {
+        no++;
+        <a id="p-@no" class="btn @(item.Status == 1?"btn-outline-success":"btn-success") @(user.Position0==no?"pick":"")" href="/game/combat/@item.RoomId">
+            @item.RoomId
+        </a>
+    }
+</div>
+@section scripts {
+    <script>
+        $("#btn-create").click(function () { // click button create room
+            $.post("/game/create", {
+                userName: '@User.Identity.Name'
+            })
+        })
+
+        function press(key) { // submit press key to server
+            $.get("/game/press", {
+                userName: '@User.Identity.Name',
+                key: key
+            })
+        }
+
+        $(document).keypress(function (event) { // event press key
+            press(event.which - 48);
+        });
+
+        $(function () { // socket real-time by signalR
+            var connection = connection || $.hubConnection(); 
+            var hub = hub || connection.createHubProxy("GameHub");
+            hub.on("onLoad", function () {
+                console.log("onLoad");
+                $.get("/game", function (data, status) {
+                    $("#Rooms").html($(data).find("#Rooms").html());
+                })
+            });
+            hub.on("onJoin", function (roomId) {
+                window.location = "/game/combat/" + roomId;
+            });
+            connection.start(function () { });
+        })
+    </script>
+}

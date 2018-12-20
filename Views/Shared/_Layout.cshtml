@@ -1,0 +1,130 @@
+﻿<!DOCTYPE html>
+<html lang="vi" class="full-height">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - Tô Tiến An</title>
+    <link href="~/Content/mdb/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/mdb/css/mdb.min.css" rel="stylesheet" />
+    <link href="~/Content/mdb/css/style.css" rel="stylesheet" />
+    <link href="~/Content/font-awesome-4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+</head>
+
+
+<body>
+    <header>
+        <nav class="navbar fixed-top navbar-expand-lg navbar-dark cyan darken-3">
+            <a class="navbar-brand" href="/"><strong>Battle Ship TA</strong></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item  pl-1 pr-1 @(ViewBag.Pick == 1?"active":"")">
+                        <a class="nav-link" href="/">
+                            <i class="fa fa-home"></i> Home <span class="sr-only">(current)</span>
+                        </a>
+                    </li>
+
+                    <li class="nav-item pl-1 pr-1 @(ViewBag.Pick == 2?"active":"")">
+                        <a class="nav-link" href="/game">
+                            <i class="fa fa-bar-chart"></i> Game
+                        </a>
+                    </li>
+
+                    <li class="nav-item  pl-1 pr-1 @(ViewBag.Pick == 3?"active":"")">
+                        <a class="nav-link" href="/home/contact">
+                            <i class="fa fa-volume-control-phone"></i> Contact
+                        </a>
+                    </li>
+                </ul>
+                <div class="pull-right">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item  pl-1 pr-1 pull-right">
+                            @if(User.Identity.Name != "") {
+                                <a class="nav-link" href="/account/logoff">
+                                    <i class="fa fa-sign-out"></i> Logoff
+                                </a>
+                            } else {
+                                <a class="nav-link" href="/account/login">
+                                    <i class="fa fa-sign-in"></i> Login
+                                </a>
+                            }
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+    </header>
+    <!--Main Layout-->
+    <main class="py-5" style="min-height:550px;">
+        <div class="container py-4">
+            @RenderBody()
+        </div>
+
+    </main>
+    <!-- Footer -->
+    <footer class="page-footer font-small cyan darken-3">
+
+        <!-- Footer Elements -->
+        <div class="container">
+
+            <!-- Grid row-->
+            <div class="row">
+
+                <!-- Grid column -->
+                <div class="col-md-12 py-5">
+                    <div class="mb-5 flex-center">
+
+                        <!-- Facebook -->
+                        <a class="fb-ic" href="https://www.facebook.com/tienan97">
+                            <i class="fa fa-facebook fa-lg white-text mr-md-5 mr-3 fa-2x"> </i>
+                        </a>
+                        <!-- Twitter -->
+                        <a class="tw-ic" href="https://www.facebook.com/tienan97">
+                            <i class="fa fa-twitter fa-lg white-text mr-md-5 mr-3 fa-2x"> </i>
+                        </a>
+                        <!-- Google +-->
+                        <a class="gplus-ic" href="https://www.facebook.com/tienan97">
+                            <i class="fa fa-google-plus fa-lg white-text mr-md-5 mr-3 fa-2x"> </i>
+                        </a>
+                        <!--Linkedin -->
+                        <a class="li-ic" href="https://www.facebook.com/tienan97">
+                            <i class="fa fa-linkedin fa-lg white-text mr-md-5 mr-3 fa-2x"> </i>
+                        </a>
+                        <!--Instagram-->
+                        <a class="ins-ic" href="https://www.facebook.com/tienan97">
+                            <i class="fa fa-instagram fa-lg white-text mr-md-5 mr-3 fa-2x"> </i>
+                        </a>
+                        <!--Pinterest-->
+                        <a class="pin-ic" href="https://www.facebook.com/tienan97">
+                            <i class="fa fa-pinterest fa-lg white-text fa-2x"> </i>
+                        </a>
+                    </div>
+                </div>
+                <!-- Grid column -->
+
+            </div>
+            <!-- Grid row-->
+
+        </div>
+        <!-- Footer Elements -->
+        <!-- Copyright -->
+        <div class="footer-copyright text-center py-3">
+            Copyright © 2018 - Develop by <b>Tô Tiến An</b>
+        </div>
+        <!-- Copyright -->
+
+    </footer>
+    <!-- Footer -->
+    @*<script src="~/Scripts/jquery-2.2.4.min.js"></script>*@
+    <script src="~/Content/mdb/js/jquery-3.3.1.min.js"></script>
+    <script src="~/Content/mdb/js/popper.min.js"></script>
+    <script src="~/Content/mdb/js/bootstrap.min.js"></script>
+    <script src="~/Content/mdb/js/mdb.min.js"></script>
+    <script src="~/Scripts/jquery.signalR-2.4.0.min.js"></script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>
